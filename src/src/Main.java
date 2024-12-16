@@ -5,39 +5,45 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
+        int safeCount = 0;
 
-        int[] tempArr;
-
-        List<Integer> leftList = new ArrayList<>();
-
-        List<Integer> rightList = new ArrayList<>();
-
-        BufferedReader reader;
-
-        try {
-            reader = new BufferedReader(new FileReader("input.txt"));
-            String line = reader.readLine();
-            while (line != null) {
-                tempArr = Arrays.stream(line.split("\\s+")).mapToInt(Integer::parseInt).toArray();
-                leftList.add(tempArr[0]);
-                rightList.add(tempArr[1]);
-                line = reader.readLine();
+        try (BufferedReader reader = new BufferedReader(new FileReader("input.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                int[] levels = Arrays.stream(line.trim().split("\\s+"))
+                        .mapToInt(Integer::parseInt)
+                        .toArray();
+                if (isSafe(levels)) {
+                    safeCount++;
+                }
             }
-            reader.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error reading input file: " + e.getMessage());
         }
 
-        Collections.sort(leftList);
-        Collections.sort(rightList);
+        System.out.println("Number of safe reports: " + safeCount);
+    }
 
-        int sum = 0;
+    private static boolean isSafe(int[] levels) {
 
-        for (int i = 0; i < leftList.size(); i++) {
-            int num = Collections.frequency(rightList, leftList.get(i));
-            sum += num * leftList.get(i);
+        boolean increasing = levels[0] < levels[1];
+        boolean valid = true;
+
+        for (int i = 0; i < levels.length - 1; i++) {
+            int differrence = levels[i + 1] - levels[i];
+            if (differrence == 0 || Math.abs(differrence) > 3) {
+                valid = false;
+                break;
+            }
+            if (increasing && differrence < 0) {
+                valid = false;
+                break;
+            }
+            if (!increasing && differrence > 0) {
+                valid = false;
+                break;
+            }
         }
-
-        System.out.println(sum);
+        return valid;
     }
 }
